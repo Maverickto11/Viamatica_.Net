@@ -1,0 +1,14 @@
+C:\Users\viamatica\source\repos\BE_Models\bin\Debug\net8.0\BE_Models.deps.json
+C:\Users\viamatica\source\repos\BE_Models\bin\Debug\net8.0\BE_Models.runtimeconfig.json
+C:\Users\viamatica\source\repos\BE_Models\bin\Debug\net8.0\BE_Models.dll
+C:\Users\viamatica\source\repos\BE_Models\bin\Debug\net8.0\BE_Models.pdb
+C:\Users\viamatica\source\repos\BE_Models\obj\Debug\net8.0\BE_Models.csproj.AssemblyReference.cache
+C:\Users\viamatica\source\repos\BE_Models\obj\Debug\net8.0\BE_Models.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\viamatica\source\repos\BE_Models\obj\Debug\net8.0\BE_Models.AssemblyInfoInputs.cache
+C:\Users\viamatica\source\repos\BE_Models\obj\Debug\net8.0\BE_Models.AssemblyInfo.cs
+C:\Users\viamatica\source\repos\BE_Models\obj\Debug\net8.0\BE_Models.csproj.CoreCompileInputs.cache
+C:\Users\viamatica\source\repos\BE_Models\obj\Debug\net8.0\BE_Models.dll
+C:\Users\viamatica\source\repos\BE_Models\obj\Debug\net8.0\refint\BE_Models.dll
+C:\Users\viamatica\source\repos\BE_Models\obj\Debug\net8.0\BE_Models.pdb
+C:\Users\viamatica\source\repos\BE_Models\obj\Debug\net8.0\BE_Models.genruntimeconfig.cache
+C:\Users\viamatica\source\repos\BE_Models\obj\Debug\net8.0\ref\BE_Models.dll
