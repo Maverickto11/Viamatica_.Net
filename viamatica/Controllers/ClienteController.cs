@@ -23,12 +23,17 @@ namespace viamatica.Controllers
         [HttpGet("/ClienteCedula/{cedula}")]
         public async Task<IActionResult> GetallCustomerUser(string cedula)
         {
-            if(_clienteService.GetClienteCedula(cedula) == null)
+            if (_clienteService.GetClienteCedula(cedula) == null)
             {
                 return BadRequest();
             }
             return Ok(_clienteService.GetClienteCedula(cedula));
         }
 
+        [HttpPost("/Carga_Archivo")]
+        public async Task<IActionResult> UploadFile(IFormFile File)
+        {
+            return Ok(await _clienteService.UploadFileAsync(File));
+        }
     }
 }

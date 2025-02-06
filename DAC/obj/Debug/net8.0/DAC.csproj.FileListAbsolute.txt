@@ -17,3 +17,4 @@ C:\Users\viamatica\source\repos\DAC\obj\Debug\net8.0\DAC.pdb
 C:\Users\viamatica\source\repos\DAC\obj\Debug\net8.0\ref\DAC.dll
 C:\Users\viamatica\source\repos\DAC\bin\Debug\net8.0\Shared.dll
 C:\Users\viamatica\source\repos\DAC\bin\Debug\net8.0\Shared.pdb
+C:\Users\viamatica\source\repos\DAC\obj\Debug\net8.0\DAC.sourcelink.json

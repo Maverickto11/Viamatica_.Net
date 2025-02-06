@@ -19,5 +19,8 @@ namespace BL.Common
 
         public const string DeleteNotVehiculo = "Vehiculo no Eliminada";
 
+        public const string list = "Todo correcto";
+        public const string errorList = "ERROR con lista";
+
     }
 }

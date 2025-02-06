@@ -11,6 +11,8 @@ using Shared;
 using BE_Models.DTO;
 using BE_Models.Response;
 using BL.Common;
+using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 
 namespace BL.Customer
 {
@@ -71,7 +73,7 @@ namespace BL.Customer
                     command.Parameters.AddWithValue(Parameters.cedula, cedula);
                     SqlDataReader reader = command.ExecuteReader();
 
-                    
+
                     if (reader.Read())
                     {
                         cliente = new ClienteDTO
@@ -92,11 +94,66 @@ namespace BL.Customer
                     response.message = Message.foundData;
                 }
                 catch (Exception ex)
-                {                    
-                    throw new Exception (ex.Message); 
+                {
+                    throw new Exception(ex.Message);
                 }
             }
-            return response;   
+            return response;
+        }
+
+
+        public async Task<Response> UploadFileAsync(IFormFile file)
+        {
+            Response response = new();
+            string fullPath = Path.GetFullPath(file.FileName);
+
+            using (FileStream stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            string fileContent;
+            List<Cliente> list = new();
+            Cliente cliente = new();
+
+            using (StreamReader reader = new StreamReader(fullPath))
+            {
+                fileContent = await reader.ReadLineAsync();
+
+                cliente.Cedula = fileContent.Substring(0, 10).ToString();
+                cliente.Nombre = fileContent.Substring(32, 25).ToString();
+                cliente.Apellido = fileContent.Substring(64, 25).ToString();
+                cliente.Direccion = fileContent.Substring(104, 40).ToString();
+                cliente.NumCelular = fileContent.Substring(156, 10).ToString();
+                cliente.FechaNacimiento = Convert.ToDateTime(fileContent.Substring(176, 8).ToString());
+
+                list.Add(cliente);
+            }
+
+
+            ingresarUsuario(list);
+
+            if (list != null)
+            {
+                response.data = list;
+                response.message = Message.list;
+            }
+            else
+            {
+                response.message = Message.errorList;
+
+            }
+
+            return response;
+        }
+    
+
+        private /*bool*/ void ingresarUsuario(List<Cliente> clientes)           
+        {
+            foreach( Cliente cliente in clientes)
+            {
+
+            }
         }
     }
 }

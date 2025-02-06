@@ -2,6 +2,7 @@
 using BE_Models.Models;
 using BE_Models.Response;
 using BL.Customer;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,11 @@ namespace DAC.Customer
         public Response GetClienteCedula(string cedula)
         {
             return _clienteRepositroy.GetClienteCedula(cedula);
+        }
+
+        public async Task<Response> UploadFileAsync(IFormFile file)
+        {
+            return await _clienteRepositroy.UploadFileAsync(file);
         }
     }
 }
