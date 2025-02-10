@@ -15,6 +15,7 @@ namespace DAC.Customer
         List<Cliente> GetCliente();
         Response GetClienteCedula(string cedula);
         Task<Response> UploadFileAsync(IFormFile file);
+        Task<Response> CrearFactura(int idCliente, int idVehiculo);
 
 
     }

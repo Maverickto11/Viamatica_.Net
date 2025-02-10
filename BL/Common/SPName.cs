@@ -12,5 +12,6 @@ namespace BL.Common
         public const string Add_Vehiculo = "Add_Vehiculo";
         public const string UpdateVehiculo = "UpdateVehiculo";
         public const string DeleteVehiculo = "DeleteVehiculo";
+        public const string ingresarUsuario = "ingresarUsuario";
     }
 }

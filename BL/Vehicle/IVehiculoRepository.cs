@@ -17,5 +17,6 @@ namespace BL.Vehicle
 
         Task<Response> UpdateVehiculo(VehiculoDTO vehiculo);
         Task<Response> DeleteVehiculo(int id);
+
     }
 }

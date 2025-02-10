@@ -30,6 +30,11 @@ namespace DAC.Customer
             return _clienteRepositroy.GetClienteCedula(cedula);
         }
 
+        public Task<Response> CrearFactura(int idCliente, int idVehiculo)
+        {
+            return _clienteRepositroy.CrearFactura(idCliente, idVehiculo);
+        }
+
         public async Task<Response> UploadFileAsync(IFormFile file)
         {
             return await _clienteRepositroy.UploadFileAsync(file);

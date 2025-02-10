@@ -35,5 +35,11 @@ namespace viamatica.Controllers
         {
             return Ok(await _clienteService.UploadFileAsync(File));
         }
+
+        [HttpGet("/Factura/{idCliente}/{idVehiculo}")]
+        public async Task<IActionResult> CrearFactura(int idCliente, int idVehiculo)
+        {
+            return Ok(await _clienteService.CrearFactura(idCliente, idVehiculo));
+        }
     }
 }

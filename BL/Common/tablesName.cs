@@ -8,9 +8,13 @@ namespace BL.Common
 {
     public class tablesName
     {
+        public const string tablaCliente = "Cliente";
         public const string columCedula = "cedula";
         public const string columNombre = "nombre";
         public const string columApellido = "apellido";
+        public const string columDireccion = "direccion";
+        public const string columNumCelular = "numCedular";
+        public const string columFechaNacimiento = "fechaNacimiento";
 
 
         public const string columId = "id";

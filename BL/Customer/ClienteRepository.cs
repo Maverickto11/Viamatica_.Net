@@ -13,6 +13,8 @@ using BE_Models.Response;
 using BL.Common;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using System.Transactions;
 
 namespace BL.Customer
 {
@@ -31,7 +33,7 @@ namespace BL.Customer
                 try
                 {
                     conn.Open();
-                    SqlCommand command = new SqlCommand("Obtener_clientes", conn);
+                    SqlCommand command = new SqlCommand("Obtener_Todos_clientes", conn);
                     command.CommandType = CommandType.StoredProcedure;
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
@@ -101,59 +103,187 @@ namespace BL.Customer
             return response;
         }
 
-
-        public async Task<Response> UploadFileAsync(IFormFile file)
+        public async Task<Response> CrearFactura(int idCliente, int idVehiculo)
         {
             Response response = new();
-            string fullPath = Path.GetFullPath(file.FileName);
-
-            using (FileStream stream = new FileStream(fullPath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            string fileContent;
-            List<Cliente> list = new();
             Cliente cliente = new();
+            Vehiculo vehiculo = new();
+            Factura factura = new();
 
-            using (StreamReader reader = new StreamReader(fullPath))
+            using (SqlConnection conn = new SqlConnection(_connectionString))
             {
-                fileContent = await reader.ReadLineAsync();
+                try
+                {
+                    await conn.OpenAsync();
 
-                cliente.Cedula = fileContent.Substring(0, 10).ToString();
-                cliente.Nombre = fileContent.Substring(32, 25).ToString();
-                cliente.Apellido = fileContent.Substring(64, 25).ToString();
-                cliente.Direccion = fileContent.Substring(104, 40).ToString();
-                cliente.NumCelular = fileContent.Substring(156, 10).ToString();
-                cliente.FechaNacimiento = Convert.ToDateTime(fileContent.Substring(176, 8).ToString());
+                    // Obtener datos del cliente
+                    SqlCommand cmdCliente = new SqlCommand("Obtener_clientes", conn);
+                    cmdCliente.CommandType = CommandType.StoredProcedure;
+                    cmdCliente.Parameters.AddWithValue("@id", idCliente);
+                    SqlDataReader readerCliente = await cmdCliente.ExecuteReaderAsync();
 
-                list.Add(cliente);
-            }
+                    if (await readerCliente.ReadAsync())
+                    {
+                        cliente = new Cliente
+                        {
+                            Id = Convert.ToInt32(readerCliente["id"]),
+                            Cedula = readerCliente["cedula"].ToString(),
+                            Nombre = readerCliente["nombre"].ToString(),
+                            Apellido = readerCliente["apellido"].ToString(),
+                            Direccion = readerCliente["direccion"].ToString(),
+                            NumCelular = readerCliente["num_celular"].ToString(),
+                            FechaNacimiento = Convert.ToDateTime(readerCliente["fecha_nacimiento"])
+                        };
+                    }
+                    readerCliente.Close();
 
+                    // Obtener datos del vehículo
+                    SqlCommand cmdVehiculo = new SqlCommand("Obtener_Vehiculo", conn);
+                    cmdVehiculo.CommandType = CommandType.StoredProcedure;
+                    cmdVehiculo.Parameters.AddWithValue("@id", idVehiculo);
+                    SqlDataReader readerVehiculo = await cmdVehiculo.ExecuteReaderAsync();
 
-            ingresarUsuario(list);
+                    if (await readerVehiculo.ReadAsync())
+                    {
+                        vehiculo = new Vehiculo
+                        {
+                            Id = Convert.ToInt32(readerVehiculo["id"]),
+                            Modelo = readerVehiculo["modelo"].ToString(),
+                            Color = readerVehiculo["color"].ToString(),
+                            TarifaBase = Convert.ToDecimal(readerVehiculo["tarifaBase"]),
+                            Placa = readerVehiculo["placa"].ToString(),
+                        };
+                    }
+                    readerVehiculo.Close();
 
-            if (list != null)
-            {
-                response.data = list;
-                response.message = Message.list;
-            }
-            else
-            {
-                response.message = Message.errorList;
+                    // Crear la factura
+                    factura = new Factura
+                    {
+                        IdCliente = cliente.Id,
+                        IdVehiculo = vehiculo.Id,
+                        FechaEmision = DateTime.Now,
+                        Total = vehiculo.TarifaBase ?? 0,
+                        IdClienteNavigation = cliente,
+                        IdVehiculoNavigation = vehiculo
+                    };
 
+                    // Insertar la factura en la base de datos
+                    SqlCommand cmdFactura = new SqlCommand("InsertarFactura", conn);
+                    cmdFactura.CommandType = CommandType.StoredProcedure;
+                    cmdFactura.Parameters.AddWithValue("@idCliente", factura.IdCliente);
+                    cmdFactura.Parameters.AddWithValue("@idVehiculo", factura.IdVehiculo);
+                    cmdFactura.Parameters.AddWithValue("@FechaEmision", factura.FechaEmision);
+                    cmdFactura.Parameters.AddWithValue("@Total", factura.Total);
+
+                    int rowsAffected = await cmdFactura.ExecuteNonQueryAsync();
+
+                    
+                        response.data = factura;
+                        response.message = "Factura creada exitosamente";
+                   
+                   
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+                finally
+                {
+                    await conn.CloseAsync();
+                }
             }
 
             return response;
         }
-    
 
-        private /*bool*/ void ingresarUsuario(List<Cliente> clientes)           
+
+        public async Task<Response> UploadFileAsync(IFormFile file)
         {
-            foreach( Cliente cliente in clientes)
-            {
+            Response response = new();
+            List<Cliente> list = new();
 
+            try
+            {
+                using (var stream = new StreamReader(file.OpenReadStream()))
+                {
+                    string line;
+                    while ((line = await stream.ReadLineAsync()) != null)
+                    {
+                        // Asumiendo que cada línea del archivo contiene los datos del cliente separados por comas
+                        var data = line.Split(',');
+
+                        Cliente cliente = new Cliente
+                        {
+                            Cedula = data[0],
+                            Nombre = data[1],
+                            Apellido = data[2],
+                            Direccion = data[3],
+                            NumCelular = data[4],
+                            FechaNacimiento = DateTime.Parse(data[5])
+                        };
+
+                        list.Add(cliente);
+                    }
+                }
+
+                bool boolIngresar = ingresarUsuario(list);
+
+                if (boolIngresar)
+                {
+                    response.data = list;
+                    response.message = Message.list;
+                }
+                else
+                {
+                    response.message = Message.errorList;
+                }
             }
+            catch (Exception ex)
+            {
+                response.message = ex.Message;
+            }
+
+            return response;
+        }
+
+        private bool ingresarUsuario(List<Cliente> clientes)
+        {
+            bool verificar = false;
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                SqlTransaction transaction = conn.BeginTransaction();
+
+                try
+                {
+                    foreach (Cliente cliente in clientes)
+                    {
+                        SqlCommand command = new SqlCommand(SPName.ingresarUsuario, conn, transaction);
+                        command.CommandType = CommandType.StoredProcedure;
+
+                        command.Parameters.AddWithValue(Parameters.cedula, cliente.Cedula);
+                        command.Parameters.AddWithValue(Parameters.nombre, cliente.Nombre);
+                        command.Parameters.AddWithValue(Parameters.apellido, cliente.Apellido);
+                        command.Parameters.AddWithValue(Parameters.direccion, cliente.Direccion);
+                        command.Parameters.AddWithValue(Parameters.numCelular, cliente.NumCelular);
+                        command.Parameters.AddWithValue(Parameters.fechaNacimiento, cliente.FechaNacimiento);
+
+                        command.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
+                    verificar = true;
+                }
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+
+            return verificar;
         }
     }
 }
+
