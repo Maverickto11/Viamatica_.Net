@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using System.Transactions;
+using System.Globalization;
 
 namespace BL.Customer
 {
@@ -176,7 +177,7 @@ namespace BL.Customer
                     cmdFactura.Parameters.AddWithValue("@Total", factura.Total);
 
                     int rowsAffected = await cmdFactura.ExecuteNonQueryAsync();
-
+                  
                     
                         response.data = factura;
                         response.message = "Factura creada exitosamente";
@@ -200,7 +201,7 @@ namespace BL.Customer
         public async Task<Response> UploadFileAsync(IFormFile file)
         {
             Response response = new();
-            List<Cliente> list = new();
+            List<ClienteDTO> list = new();
 
             try
             {
@@ -212,14 +213,22 @@ namespace BL.Customer
                         // Asumiendo que cada línea del archivo contiene los datos del cliente separados por comas
                         var data = line.Split(',');
 
-                        Cliente cliente = new Cliente
+                        if (data.Length < 6)
+                        {
+                            // Handle the case where the line does not have enough data
+                            continue;
+                        }
+
+                        ClienteDTO cliente = new ClienteDTO
                         {
                             Cedula = data[0],
                             Nombre = data[1],
                             Apellido = data[2],
                             Direccion = data[3],
                             NumCelular = data[4],
-                            FechaNacimiento = DateTime.Parse(data[5])
+                            // FechaNacimiento = DateTime.Parse(data[5])
+                            //FechaNacimiento = Convert.ToDateTime(data[5])
+                            FechaNacimiento = DateTime.TryParseExact(data[5].Trim(), "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime fecha) ? fecha : DateTime.MinValue
                         };
 
                         list.Add(cliente);
@@ -246,7 +255,7 @@ namespace BL.Customer
             return response;
         }
 
-        private bool ingresarUsuario(List<Cliente> clientes)
+        private bool ingresarUsuario(List<ClienteDTO> clientes)
         {
             bool verificar = false;
 
@@ -257,7 +266,7 @@ namespace BL.Customer
 
                 try
                 {
-                    foreach (Cliente cliente in clientes)
+                    foreach (ClienteDTO cliente in clientes)
                     {
                         SqlCommand command = new SqlCommand(SPName.ingresarUsuario, conn, transaction);
                         command.CommandType = CommandType.StoredProcedure;

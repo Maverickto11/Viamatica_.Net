@@ -23,7 +23,7 @@ namespace viamatica.Controllers
         [HttpGet("/ClienteCedula/{cedula}")]
         public async Task<IActionResult> GetallCustomerUser(string cedula)
         {
-            if (_clienteService.GetClienteCedula(cedula) == null)
+            if (_clienteService.GetClienteCedula(cedula) == null)   
             {
                 return BadRequest();
             }
